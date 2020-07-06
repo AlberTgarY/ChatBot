@@ -120,7 +120,7 @@ def member_joined_channel(event_data):
     # Use conversations.info method to get channel name for DM msg
     info = client.conversations_info(channel=channelid)
     msg = f'Welcome! You have joined: {info["channel"]["name"]}!'
-    client.chat_postMessage(channel=user, text=msg, icon_emoji=":heart:")
+    client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':heart:')
 
 # Create an event listener for "member_left_channel" events
 # Sends a DM to the user who left the channel
@@ -135,21 +135,36 @@ def member_joined_channel(event_data):
     # Use conversations.info method to get channel name for DM msg
     info = client.conversations_info(channel=channelid)
     msg = f'You have left the channel: {info["channel"]["name"]}! '
-    client.chat_postMessage(channel=user, text=msg, icon_emoji=":heart:")
+    client.chat_postMessage(channel=user, text=msg, icon_emoji=':wave:')
 
+
+# Create an event listener for "app_mention" events
+# Sends a DM to the user who mentioned the bot
+@slack_events_adapter.on("app_mention")
+def app_mention(event_data):
+    text = event_data["event"]["text"]
+    channelid = event_data["event"]["channel"]
+    teamID = event_data["team_id"]
+    if "Hello" in text:
+        react_greeting(teamID,channelid)
+
+def react_greeting(teamID,channelid):
+    client = init_client(teamID)
+    msg = f'Hi there!  '
+    client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
 # Create an event listener for "message" events
 # Sends a DM to the user who sent the message.
 
-@slack_events_adapter.on("message")
-def member_joined_channel(event_data):
-    user = event_data["event"]["user"]
-    channelid = event_data["event"]["channel"]
-    teamID = event_data["team_id"]
-
-    client =init_client(teamID)
-
-    # Use conversations.info method to get channel name for DM msg
-    info = client.conversations_info(channel=channelid)
-    msg = f'A message has been sent to :{info["channel"]["name"]}! '
-    client.chat_postMessage(channel=user, text=msg, icon_emoji=":heart:")
+# @slack_events_adapter.on("message")
+# def member_joined_channel(event_data):
+#     user = event_data["event"]["user"]
+#     channelid = event_data["event"]["channel"]
+#     teamID = event_data["team_id"]
+#
+#     client =init_client(teamID)
+#
+#     # Use conversations.info method to get channel name for DM msg
+#     info = client.conversations_info(channel=channelid)
+#     msg = f'A message has been sent to :{info["channel"]["name"]}! '
+#     client.chat_postMessage(channel=user, text=msg, icon_emoji=":heart:")
 

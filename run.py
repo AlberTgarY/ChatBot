@@ -94,6 +94,17 @@ def create_channel():
 # instance as the last param, or with `server=app`.
 slack_events_adapter = SlackEventAdapter(signing_secret, "/slack/events", app)
 
+def init_client(teamID):
+
+    # look up the token in our "database"
+    token = token_database[teamID]
+
+    # In case the app doesn't have access to the oAuth Token
+    if token is None:
+        print("ERROR: Autenticate the App!")
+        return
+    client = slack.WebClient(token=token)
+    return client
 
 # Create an event listener for "member_joined_channel" events
 # Sends a DM to the user who joined the channel
@@ -104,14 +115,7 @@ def member_joined_channel(event_data):
     channelid = event_data["event"]["channel"]
     teamID = event_data["team_id"]
 
-    # look up the token in our "database"
-    token = token_database[teamID]
-
-    # In case the app doesn't have access to the oAuth Token
-    if token is None:
-        print("ERROR: Autenticate the App!")
-        return
-    client = slack.WebClient(token=token)
+    client = init_client(teamID)
 
     # Use conversations.info method to get channel name for DM msg
     info = client.conversations_info(channel=channelid)
@@ -126,14 +130,7 @@ def member_joined_channel(event_data):
     channelid = event_data["event"]["channel"]
     teamID = event_data["team_id"]
 
-    # look up the token in our "database"
-    token = token_database[teamID]
-
-    # In case the app doesn't have access to the oAuth Token
-    if token is None:
-        print("ERROR: Autenticate the App!")
-        return
-    client = slack.WebClient(token=token)
+    client = init_client(teamID)
 
     # Use conversations.info method to get channel name for DM msg
     info = client.conversations_info(channel=channelid)
@@ -149,14 +146,7 @@ def member_joined_channel(event_data):
     channelid = event_data["event"]["channel"]
     teamID = event_data["team_id"]
 
-    # look up the token in our "database"
-    token = token_database[teamID]
-
-    # In case the app doesn't have access to the oAuth Token
-    if token is None:
-        print("ERROR: Autenticate the App!")
-        return
-    client = slack.WebClient(token=token)
+    client =init_client(teamID)
 
     # Use conversations.info method to get channel name for DM msg
     info = client.conversations_info(channel=channelid)

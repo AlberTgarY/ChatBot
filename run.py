@@ -1,5 +1,6 @@
 import os
 import slack
+import re
 from flask import Flask, request
 from slackeventsapi import SlackEventAdapter
 from slackbot.bot import listen_to
@@ -147,24 +148,40 @@ def app_mention(event_data):
     teamID = event_data["team_id"]
     if "Hello" in text:
         react_greeting(teamID,channelid)
+    elif "Rename Channel=" in text:
+        pattern = "Rename Channel="
+        renamed = text[text.index(pattern) + len(pattern):]
+        react_rename_channel(teamID,channelid,renamed)
+    elif "Help" in text:
+        react_help(teamID,channelid)
+    else:
+        react_gethelp(teamID,channelid)
+
+def react_rename_channel(teamID,channelid,renamed):
+    client = init_client(teamID)
+    # only count first 15 digits
+    renamed = renamed[0,15]
+    # look up the token in our "database"
+    token = token_database[teamID]
+    msg = f'The channel has been renamed to: {renamed}! '
+    client.conversations_rename(token=token, channel=channelid, name=renamed)
+    client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
+
+
 
 def react_greeting(teamID,channelid):
     client = init_client(teamID)
     msg = f'Hi there!  '
     client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
-# Create an event listener for "message" events
-# Sends a DM to the user who sent the message.
 
-# @slack_events_adapter.on("message")
-# def member_joined_channel(event_data):
-#     user = event_data["event"]["user"]
-#     channelid = event_data["event"]["channel"]
-#     teamID = event_data["team_id"]
-#
-#     client =init_client(teamID)
-#
-#     # Use conversations.info method to get channel name for DM msg
-#     info = client.conversations_info(channel=channelid)
-#     msg = f'A message has been sent to :{info["channel"]["name"]}! '
-#     client.chat_postMessage(channel=user, text=msg, icon_emoji=":heart:")
+def react_help(teamID,channelid):
+    client = init_client(teamID)
+    msg = f"Type 'Hello'to send greeting.\n " \
+          f"Type 'Rename Channel='+ [name of channel] to rename current channel.(maximum 15 strings)"
+    client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
+
+def react_gethelp(teamID,channelid):
+    client = init_client(teamID)
+    msg = f"Type 'Help' to get command list."
+    client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
 

@@ -1,17 +1,17 @@
 import os
 import slack
-import re
-from flask import Flask, request
+from flask import Flask, request,url_for
 from slackeventsapi import SlackEventAdapter
+from slack import errors
 from slackbot.bot import listen_to
 from uuid import uuid4
 
 # client_id = os.environ["SLACK_CLIENT_ID"]
 # client_secret = os.environ["SLACK_CLIENT_SECRET"]
 # signing_secret = os.environ["SLACK_SIGNING_SECRET"]
-client_id = "1219252904066.1207036003607"
-client_secret = "a558c38d630ccc71f02806904db032c1"
-signing_secret = "95a2dd3aa2348a6893ebfd926e9553d6"
+client_id = "1219252904066.1237174374180"
+client_secret = "7dbcc33434a502ee88aee57fcc831b17"
+signing_secret = "f7178953bd92a9559eab54c76704bc4d"
 
 state = str(uuid4())
 # Scopes needed for this app
@@ -21,9 +21,12 @@ oauth_scope = ", ".join(["chat:write", "channels:read", "channels:join", "channe
 token_database = {}
 global_token = ""
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='', static_url_path='')
 
-
+@app.route('/favicon.ico')
+def get_fav():
+    print(__name__)
+    return app.send_static_file('static/favicon.ico')
 # Route to kick off Oauth flow
 @app.route("/begin_auth", methods=["GET"])
 def pre_install():
@@ -107,6 +110,22 @@ def init_client(teamID):
     client = slack.WebClient(token=token)
     return client
 
+# Create an event listener for "message" events
+# Sends a DM to the user who send a message to any channel
+# @slack_events_adapter.on("message")
+# def command(event_data):
+#     user = event_data["event"]["user"]
+#     channelid = event_data["event"]["channel"]
+#     text = event_data["event"]["text"]
+#     teamID = event_data["team_id"]
+#
+#     #client = init_client(teamID)
+#
+#     if "Kick" in text:
+#         pattern = "Kick:"
+#         kicked_user = text[text.index(pattern) + len(pattern):]
+#         kick_user(teamID, channelid, kicked_user)
+
 # Create an event listener for "member_joined_channel" events
 # Sends a DM to the user who joined the channel
 
@@ -121,7 +140,7 @@ def member_joined_channel(event_data):
     # Use conversations.info method to get channel name for DM msg
     info = client.conversations_info(channel=channelid)
     msg = f'Welcome! You have joined: {info["channel"]["name"]}!'
-    client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':heart:')
+    client.chat_postMessage(channel=user, text=msg, icon_emoji=':heart:')
 
 # Create an event listener for "member_left_channel" events
 # Sends a DM to the user who left the channel
@@ -143,29 +162,80 @@ def member_joined_channel(event_data):
 # Sends a DM to the user who mentioned the bot
 @slack_events_adapter.on("app_mention")
 def app_mention(event_data):
+    user = event_data["event"]["user"]
     text = event_data["event"]["text"]
     channelid = event_data["event"]["channel"]
     teamID = event_data["team_id"]
     if "Hello" in text:
         react_greeting(teamID,channelid)
-    elif "Rename Channel=" in text:
-        pattern = "Rename Channel="
-        renamed = text[text.index(pattern) + len(pattern):]
-        react_rename_channel(teamID,channelid,renamed)
+    # elif "Rename Channel=" in text:
+    #     pattern = "Rename Channel="
+    #     renamed = text[text.index(pattern) + len(pattern):]
+    #     react_rename_channel(teamID,channelid,renamed)
+    elif "Invite" in text:
+        pattern = "Invite:"
+        invited_user = text[text.index(pattern) + len(pattern):]
+        invite_user(teamID, channelid, invited_user)
+    elif "Kick" in text:
+        pattern = "Kick:"
+        kicked_user = text[text.index(pattern) + len(pattern):]
+        kick_user(teamID, channelid, kicked_user)
     elif "Help" in text:
-        react_help(teamID,channelid)
+        react_help(teamID, channelid)
     else:
-        react_gethelp(teamID,channelid)
+        react_gethelp(teamID, channelid)
 
-def react_rename_channel(teamID,channelid,renamed):
+def invite_user(teamID, channelid, invited_user):
     client = init_client(teamID)
-    # only count first 15 digits
-    renamed = renamed[0,15]
+    user_ID = ""
     # look up the token in our "database"
     token = token_database[teamID]
-    msg = f'The channel has been renamed to: {renamed}! '
-    client.conversations_rename(token=token, channel=channelid, name=renamed)
-    client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
+    request = client.api_call("users.list")
+    if request['ok']:
+        for item in request['members']:
+            if(item['deleted']== False):
+                if(item['profile']['real_name']==invited_user):
+                    user_ID = item["id"]
+    if(user_ID!=""):
+        try:
+            client.conversations_invite(token=token, channel=channelid, users=user_ID)
+            msg = f'{invited_user} has been invited! '
+            client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
+        except errors.SlackApiError:
+            msg = f'Can`t invite {invited_user}, member is already in the channel or some other errors occurred.'
+            client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
+
+def kick_user(teamID, channelid, kicked_user):
+    client = init_client(teamID)
+    user_ID = ""
+    # look up the token in our "database"
+    token = token_database[teamID]
+    request = client.api_call("users.list")
+    if request['ok']:
+        for item in request['members']:
+            if(item['deleted']== False):
+                if(item['profile']['real_name']==kicked_user):
+                    user_ID = item["id"]
+    if(user_ID!=""):
+        try:
+            client.conversations_kick(token=token, channel=channelid, user=user_ID)
+            msg = f'{kicked_user} has been kicked! '
+            client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
+        except errors.SlackApiError:
+            msg = f'Can`t kick {kicked_user}, member is not in the channel or some other errors occurred.'
+            client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
+
+
+# 'restricted_action'
+# def react_rename_channel(teamID,channelid,renamed):
+#     client = init_client(teamID)
+#     # only count first 15 digits
+#     renamed = renamed[0:15]
+#     # look up the token in our "database"
+#     token = token_database[teamID]
+#     msg = f'The channel has been renamed to: {renamed}! '
+#     client.conversations_rename(token=token, channel=channelid, name=renamed)
+#     client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
 
 
 
@@ -176,8 +246,11 @@ def react_greeting(teamID,channelid):
 
 def react_help(teamID,channelid):
     client = init_client(teamID)
-    msg = f"Type 'Hello'to send greeting.\n " \
-          f"Type 'Rename Channel='+ [name of channel] to rename current channel.(maximum 15 strings)"
+    msg = f"Help List: \n" \
+          f"Type 'Hello'to send greeting.\n " \
+          f"Type 'Kick:'+ userName to kick someone from the channel\n" \
+          f"Type 'Invite:'+ userName to invite someone to the channel\n" \
+          #f"Type 'Rename Channel='+ [name of channel] to rename current channel.(maximum 15 strings)"
     client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
 
 def react_gethelp(teamID,channelid):

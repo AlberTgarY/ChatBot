@@ -6,7 +6,6 @@ import os
 import slack
 from flask import Flask, request
 from slackeventsapi import SlackEventAdapter
-from slack import errors
 from uuid import uuid4
 
 # client_id = os.environ["SLACK_CLIENT_ID"]
@@ -244,7 +243,7 @@ def invite_user(teamID, channelid, invited_user):
             client.conversations_invite(token=token, channel=channelid, users=user_ID)
             msg = f'{invited_user} has been invited! '
             client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
-        except errors.SlackApiError:
+        except Exception as e:
             # throws Exception
             msg = f'Can`t invite {invited_user}, member is already in the channel or some other errors occurred.'
             client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
@@ -273,7 +272,7 @@ def kick_user(teamID, channelid, kicked_user):
             client.conversations_kick(token=token, channel=channelid, user=user_ID)
             msg = f'{kicked_user} has been kicked! '
             client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')
-        except errors.SlackApiError:
+        except Exception as e:
             # throws Exception
             msg = f'Can`t kick {kicked_user}, member is not in the channel or some other errors occurred.'
             client.chat_postMessage(channel=channelid, text=msg, icon_emoji=':wave:')

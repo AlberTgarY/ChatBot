@@ -1,8 +1,10 @@
 class Command(object):
+
     def __init__(self):
         self.commands = {
             "jump": self.jump,
-            "help": self.help
+            "help": self.help,
+            "hello": self.hello
         }
 
     def handle_command(self, user, command):
@@ -15,12 +17,18 @@ class Command(object):
 
         return response
 
+
+    def hello(self):
+        return "Hello! Hello! Hello!"
+
     def jump(self):
-        return "HiHi HiHi"
+        return "Yes I jumped."
 
     def help(self):
         response = "Currently I support the following commands:\r\n"
+        count = 0
         for command in self.commands:
-            response += command + "\r\n"
+            count = count + 1
+            response += str(count) + ":" + command + "\r\n"
 
         return response

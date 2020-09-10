@@ -29,11 +29,12 @@ def inspection(scope_dict):
         for line in open(TEMP_path+file):
             # search for scope category first
             for scope in scopes:
-                if (scope in line) or (cap(scope) in line)or (scope.upper() in line):
+                if (scope in line) or (cap(scope) in line)or (scope.upper() in line)or (scope.lower() in line):
 
                     sc = 0
                     sc_cap = 0
                     sc_upp = 0
+                    sc_low = 0
 
                     if scope in line:
                         sc = line.find(scope)
@@ -41,8 +42,10 @@ def inspection(scope_dict):
                         sc_cap = line.find(cap(scope))
                     if scope.upper() in line:
                         sc_upp = line.find(scope.upper())
+                    if scope.lower() in line:
+                        sc_low = line.find(scope.lower())
 
-                    scope_sorted_list = [sc, sc_cap, sc_upp]
+                    scope_sorted_list = [sc, sc_cap, sc_upp, sc_low]
                     scope_sorted_list.sort(reverse=True)
                     scope_string_index = scope_sorted_list[0]
                     scope_string_end_index = scope_string_index + len(scope)
@@ -60,16 +63,13 @@ def inspection(scope_dict):
                     for method in methods:
                         for sub_method in method:
                             # print("当前搜索权限名: "+sub_method)
-                            cur_temp, cur_scope_string_index, cur_scope_string_end_index = inspect_method(data, scope, method, sub_method, temp, before_scope_string_index, before_scope_string_end_index)
-                            first = False
+                            cur_temp, cur_scope_string_index, cur_scope_string_end_index = inspect_method(data, scope, method, sub_method, temp, before_scope_string_end_index)
                             if (cur_temp and cur_scope_string_index and cur_scope_string_end_index):
                                 # print("----------------next_________")
-                                # print(sub_method)
-                                # print("temp: " + str(temp))
                                 # print("curtemp: "+ str(cur_temp))
                                 # print("cur_scope_string_index: "+str(cur_scope_string_index))
                                 # print("cur_scope_string_end_index: " + str(cur_scope_string_end_index))
-                                before_scope_string_index = cur_scope_string_index
+                                # before_scope_string_index = cur_scope_string_index
                                 before_scope_string_end_index = cur_scope_string_end_index
                                 temp = cur_temp
                             else:
@@ -78,24 +78,28 @@ def inspection(scope_dict):
                                 break
 
 
-def inspect_method( data, scope, method, first_method_name, temp, before_scope_string_index, before_scope_string_end_index):
-    if (first_method_name in temp) or (cap(first_method_name) in temp) or (first_method_name.upper() in temp):
+def inspect_method(data, scope, method, sub_method, temp, before_scope_string_end_index):
+    if (sub_method in temp) or (cap(sub_method) in temp) or (sub_method.upper() in temp)or (sub_method.lower() in temp):
         tp = 0
         tp_cap = 0
         tp_upp = 0
+        tp_low = 0
 
         # print("当前文本: " + temp)
-        if first_method_name in temp:
-            tp = temp.find(first_method_name)
+        if sub_method in temp:
+            tp = temp.find(sub_method)
             # print("普通权限名: " + str(tp))
-        if cap(first_method_name) in temp:
-            tp_cap = temp.find(cap(first_method_name))
+        if cap(sub_method) in temp:
+            tp_cap = temp.find(cap(sub_method))
             # print("首字母大写权限名: " + str(tp_cap))
-        if first_method_name.upper() in temp:
-            tp_upp = temp.find(first_method_name.upper())
+        if sub_method.upper() in temp:
+            tp_upp = temp.find(sub_method.upper())
+            # print("全大写权限名: " + str(tp_upp))
+        if sub_method.lower() in temp:
+            tp_low = temp.find(sub_method.lower())
             # print("全大写权限名: " + str(tp_upp))
 
-        method_sorted_list = [tp, tp_cap, tp_upp]
+        method_sorted_list = [tp, tp_cap, tp_upp, tp_low]
 
         method_sorted_list.sort(reverse=True)
         method_string_index = method_sorted_list[0]
@@ -104,9 +108,9 @@ def inspect_method( data, scope, method, first_method_name, temp, before_scope_s
         size = len(method)
         # print("当前遍历权限列表: "+str(method))
         # print("切分后文本: " + sub_temp)
-        # method_string_end_index = method_string_index + before_scope_string_index + len(first_method_name)
-        method_string_end_index = method_string_index + len(first_method_name)
-        # print("method_string_end_index = "+str(method_string_end_index)+" = "+str(method_string_index)+" + "+str(len(first_method_name)))
+        # method_string_end_index = method_string_index + before_scope_string_index + len(sub_method)
+        method_string_end_index = method_string_index + len(sub_method)
+        # print("method_string_end_index = "+str(method_string_end_index)+" = "+str(method_string_index)+" + "+str(len(sub_method)))
         # print("before_scope_string_end_index: "+str(before_scope_string_end_index))
         # print("current method_string_index: "+str(method_string_index))
 
@@ -128,7 +132,7 @@ def inspect_method( data, scope, method, first_method_name, temp, before_scope_s
                 # print("sub_method_name: "+sub_method_name)
                 # print("sub_temp: "+sub_temp)
                 if (sub_method_name in sub_temp) or (sub_method_name.capitalize() in sub_temp) or (
-                        sub_method_name.upper() in sub_temp):
+                        sub_method_name.upper() in sub_temp or sub_method_name.lower() in sub_temp):
                     scope_full_name = scope_full_name + "." + sub_method_name
                     count = count + 1
             if count == size:

@@ -1,4 +1,0 @@
-# static_analysis_example/stubs/taint/general.pysa
-
-# model for raw_input
-def jump(self = ...) -> TaintSource[UserControlled]: ...

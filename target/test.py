@@ -1,9 +1,8 @@
 
 import time
-import os
 import re
 from slackclient import SlackClient
-import command
+from target import command
 
 
 class Bot(object):

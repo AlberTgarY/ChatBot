@@ -1,14 +1,16 @@
 # coding=utf-8
 import ssl
-import random
 from urllib import request
 from fake_useragent import UserAgent
-# HTML 下载器
+from Logger import get_log
+
+logger = get_log()
+# HTML downloader
 class HtmlDownloader(object):
 
-
-    #   下载当前页，返回下载信息
-    def download(self, url):
+    #  download the page
+    @staticmethod
+    def download(url):
         context = ssl._create_unverified_context()
         if url is None:
             raise ValueError('target url is None')
@@ -25,5 +27,6 @@ class HtmlDownloader(object):
             else:
                 return response.read()
         except Exception as e:
-            print(url+' got a error: [' + str(e) +" ] ")
+            logger.debug(url+' got a error: [' + str(e) + " ]")
+            print(url+' got a error: [' + str(e) + " ]")
 

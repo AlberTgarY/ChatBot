@@ -2,15 +2,18 @@
 
 import url_manager, html_downloader, html_parser
 import configparser
+from Logger import get_log
 
 config = configparser.RawConfigParser()
 config.read("../cfg/cfg.ini")
 counter = config.get("num", "num_page")
+logger = get_log()
 
-# 爬虫主调程序，主要逻辑
+
+# Main program of the crawler
 class SpiderMain(object):
 
-    # 初始化，设置 URL 管理器、下载器、解析器、输出器
+    # init
     def __init__(self):
 
         self.urls = url_manager.UrlManager()
@@ -19,27 +22,29 @@ class SpiderMain(object):
 
     def craw(self, root_url):
 
-        # 下载成功页面计数
+        # count for url successfully downloaded
         count = 0
 
-        # 添加第一个 URL
+        # add the root url
         self.urls.add_new_url(root_url)
 
-        for i in range(2, int(counter)):
-            url_l = "https://github.com/search?l=Python&o=desc&p="
-            url_r = "&q=slackbot&s=stars&type=Repositories"
-            new_url = url_l+str(i)+url_r
-            self.urls.add_new_url(new_url)
+        # for i in range(2, int(counter)):
+        #     url_l = "https://github.com/search?l=Python&o=desc&p="
+        #     url_r = "&q=slackbot&s=stars&type=Repositories"
+        #     new_url = url_l+str(i)+url_r
+        #     self.urls.add_new_url(new_url)
         print(self.urls.new_urls)
-        # URL 管理器中存在 URL 时处理
+        # running until set() has no new url
         while self.urls.has_new_url():
             try:
 
                 new_url = self.urls.get_new_url()
 
                 print("craw %d : %s" % (count, new_url))
-
+                # download code
                 html_cont = self.downloader.download(new_url)
+                logger.info(">>>Start crawling: "+new_url)
+                # parse the code
                 res_data = self.parser.parse(new_url, html_cont)
                 self.parser.fetch_python_code(res_data)
 
@@ -49,14 +54,13 @@ class SpiderMain(object):
                 count = count + 1
 
             except Exception as e:
-                print(e)
-
-        # self.outputer.output_excel()
+                logger.debug("Got a Error in method [craw]: " +str(e))
+                print("Got a Error in method [craw]: " +str(e))
 
 
 if __name__ == "__main__":
     # 设置入口页 URL
     # https://news.sina.com.cn/  https://news.163.com/
-    root_url = "https://github.com/search?l=Python&o=desc&p=1&q=slackbot&s=stars&type=Repositories"
+    root_url = "https://github.com/search?l=Python&o=desc&p=9&q=slackbot&s=stars&type=Repositories"
     obj_spider = SpiderMain()
     obj_spider.craw(root_url)

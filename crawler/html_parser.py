@@ -1,69 +1,77 @@
 # coding=utf-8
 
-from urllib import parse
 from bs4 import BeautifulSoup
 import json
 import os
 
-# HTML 解析器
+# HTML Parser
 import html_downloader
 import configparser
+from Logger import get_log
+import time
+import random
 
 type_list = ["py"]
 config = configparser.RawConfigParser()
 config.read("../cfg/cfg.ini")
 TEMP_path = config.get("path", "temp_path_crawler")
 counter = config.get("num", "num_of_branch_in_current")
+logger = get_log()
+
+
+def random_sleep(mu=1, sigma=0.4):
+    secs = random.normalvariate(mu, sigma)
+    if secs <= 0:
+        secs = mu  # 太小则重置为平均值
+    time.sleep(secs)
 
 
 def get_keys(d, value):
-    return [k for k,v in d.items() if v == value]
-
-
-def get_content(news_content):
-    # get the news info and  make it a string
-    temp = ''
-    for new in news_content:
-        temp = temp + new.get_text().replace('\n','')
-    if temp != '':
-        return temp
-    raise ValueError('content is None')
+    return [k for k, v in d.items() if v == value]
 
 
 class HtmlParser(object):
     @staticmethod
     def fetch_python_code(file_dict):
+        try:
+            downloader = html_downloader.HtmlDownloader()
 
-        downloader = html_downloader.HtmlDownloader()
+            for urls_dict in file_dict.values():
+                folder_name = get_keys(file_dict, urls_dict)
+                # find the branch name
+                reversed_url = "".join(reversed(folder_name[0]))
+                reversed_name = reversed_url.split("/")
+                branch = "".join(reversed(reversed_name[0]))
+                name = "".join(reversed(reversed_name[1]))
+                # create dir for current branch
+                folder_path = TEMP_path + name + "-" + branch + '/'
+                if not os.path.exists(folder_path):
+                    os.mkdir(folder_path)
+                    logger.debug("Create dir: " + folder_path)
+                # input code
+                for url in urls_dict.values():
+                    random_sleep()
+                    html_cont = downloader.download(url)
+                    soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
+                    code = soup.find_all(name="td", attrs={"class": "blob-code blob-code-inner js-file-line"})
 
-        for urls_dict in file_dict.values():
-            folder_name = get_keys(file_dict, urls_dict)
-            # find the branch name
-            reversed_url = "".join(reversed(folder_name[0]))
-            reversed_name = reversed_url.split("/")
-            branch = "".join(reversed(reversed_name[0]))
-            name = "".join(reversed(reversed_name[1]))
-            # create dir for current branch
-            folder_path = TEMP_path + name + "-" + branch + '/'
-            if not os.path.exists(folder_path):
-                os.mkdir(folder_path)
-            # input code
-            for url in urls_dict.values():
+                    file_name = get_keys(urls_dict, url)
+                    path = folder_path + file_name[0]
 
-                html_cont = downloader.download(url)
-                soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
-                code = soup.find_all(name="td", attrs={"class": "blob-code blob-code-inner js-file-line"})
+                    logger.info("Writing file to: " + path)
 
-                file_name = get_keys(urls_dict, url)
-                path = folder_path + file_name[0]
+                    if not os.path.exists(path):
+                        with open(path, "w", encoding="utf-8") as f:
+                            logger.debug(str(f))
+                            print(f)
 
-                if not os.path.exists(path):
-                    with open(path, "w", encoding="utf-8") as f:
-                        print(f)
+                    with open(path, "a", encoding="utf-8") as f:
+                        for row in code:
+                            f.write(row.text+"\n")
 
-                with open(path, "a", encoding="utf-8") as f:
-                    for row in code:
-                        f.write(row.text+"\n")
+        except Exception as e:
+            logger.debug("Got a Error in method [fetch_python_code]: " + str(e))
+            print("Got a Error in method [fetch_python_code]: " + str(e))
 
     @staticmethod
     def has_key(found, prefix, suffix, file_dict):
@@ -92,6 +100,7 @@ class HtmlParser(object):
                 filename = span.a.string
 
                 print("Searching for: " + target_url)
+                logger.debug("Searching for: " + target_url)
                 # separate file name and suffix
                 revert = ''.join(reversed(filename))
                 suffix_index = revert.find('.')
@@ -104,29 +113,15 @@ class HtmlParser(object):
                         key = self.has_key(found, prefix, suffix, file_dict)
                         tempdict = {key: str(target_url)}
                         file_dict.update(tempdict)
+                        logger.debug("Found a python file")
                         print("find a python file")
                 else:
                     self.recursive_search_python_file(target_url, file_dict)
         except Exception as e:
-            print(e)
+            print("Got a Error in method [recursive_search_python_file]: " +str(e))
         return file_dict
 
-    @staticmethod
-    # Find the all indexes at the first search
-    def _get_all_index(page_url, soup):
-
-        new_urls = set()
-        # 查找页面的 URL
-        links = soup.find('div', class_="main-nav").find_all('a')
-        for link in links:
-            new_url = link['href']
-            # 将 new_url 按照 page_url 的格式拼接
-            new_url_join = parse.urljoin(page_url, new_url)
-            new_urls.add(new_url_join)
-        return new_urls
-
-
-    # 获取页面中想要的 DATA
+    # get the files
     def _get_new_data(self, soup):
         self.downloader = html_downloader.HtmlDownloader()
         res_data = {}
@@ -140,7 +135,7 @@ class HtmlParser(object):
             attr_dict = json.loads(n.a['data-hydro-click'])
             url = attr_dict['payload']['result']['url']
             count = count - 1
-            if count >= 0:
+            if count > 0:
                 file_dict = self.recursive_search_python_file(url, file_dict)
                 temp_dict = {url: file_dict}
                 res_data.update(temp_dict)
@@ -148,7 +143,7 @@ class HtmlParser(object):
                 break
         return res_data
 
-    # 解析网页获取 new_urls 与 new_data
+    # parse the html code and return the result
     def parse(self, page_url, html_cont):
 
         if page_url is None or html_cont is None:
@@ -157,6 +152,6 @@ class HtmlParser(object):
         soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
 
         # new_urls = self._get_new_urls(page_url, soup)
-        new_data = self._get_new_data(soup)
-        print(new_data)
-        return new_data
+        res_data = self._get_new_data(soup)
+        print(res_data)
+        return res_data

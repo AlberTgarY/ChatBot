@@ -16,6 +16,7 @@ config = configparser.RawConfigParser()
 config.read("../cfg/cfg.ini")
 TEMP_path = config.get("path", "temp_path_crawler")
 counter = config.get("num", "num_of_branch_in_current")
+page = config.get("num", "page")
 logger = get_log()
 
 
@@ -38,16 +39,24 @@ class HtmlParser(object):
 
             for urls_dict in file_dict.values():
                 folder_name = get_keys(file_dict, urls_dict)
+
                 # find the branch name
                 reversed_url = "".join(reversed(folder_name[0]))
                 reversed_name = reversed_url.split("/")
                 branch = "".join(reversed(reversed_name[0]))
                 name = "".join(reversed(reversed_name[1]))
+
+                # create dir for current page
+                folder_page_path = TEMP_path + page + '/'
+                if not os.path.exists(folder_page_path):
+                    os.mkdir(folder_page_path)
+
                 # create dir for current branch
-                folder_path = TEMP_path + name + "-" + branch + '/'
-                if not os.path.exists(folder_path):
-                    os.mkdir(folder_path)
-                    logger.debug("Create dir: " + folder_path)
+                folder_branch_path = folder_page_path + name + "-" + branch + '/'
+                if not os.path.exists(folder_branch_path):
+                    os.mkdir(folder_branch_path)
+                    logger.debug("Create dir: " + folder_branch_path)
+
                 # input code
                 for url in urls_dict.values():
                     random_sleep()
@@ -56,7 +65,7 @@ class HtmlParser(object):
                     code = soup.find_all(name="td", attrs={"class": "blob-code blob-code-inner js-file-line"})
 
                     file_name = get_keys(urls_dict, url)
-                    path = folder_path + file_name[0]
+                    path = folder_branch_path + file_name[0]
 
                     logger.info("Writing file to: " + path)
 

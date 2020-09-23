@@ -7,6 +7,7 @@ from Logger import get_log
 config = configparser.RawConfigParser()
 config.read("../cfg/cfg.ini")
 counter = config.get("num", "num_page")
+page = config.get("num", "page")
 logger = get_log()
 
 
@@ -28,11 +29,12 @@ class SpiderMain(object):
         # add the root url
         self.urls.add_new_url(root_url)
 
-        # for i in range(2, int(counter)):
+        # for i in range(page+1, page+2):
         #     url_l = "https://github.com/search?l=Python&o=desc&p="
         #     url_r = "&q=slackbot&s=stars&type=Repositories"
         #     new_url = url_l+str(i)+url_r
         #     self.urls.add_new_url(new_url)
+
         print(self.urls.new_urls)
         # running until set() has no new url
         while self.urls.has_new_url():
@@ -61,6 +63,7 @@ class SpiderMain(object):
 if __name__ == "__main__":
     # 设置入口页 URL
     # https://news.sina.com.cn/  https://news.163.com/
-    root_url = "https://github.com/search?l=Python&o=desc&p=9&q=slackbot&s=stars&type=Repositories"
+    logger.info("----------------------Crawler has started---------------------------")
+    root_url = "https://github.com/search?l=Python&o=desc&p=" + str(page) + "&q=slackbot&s=stars&type=Repositories"
     obj_spider = SpiderMain()
     obj_spider.craw(root_url)

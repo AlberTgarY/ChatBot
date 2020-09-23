@@ -70,56 +70,59 @@ def output_scope(branch, scope_full_name, scopes_requirement, output_dict):
 def inspection(scope_dict):
     data = pd.read_excel(str(XLSX_path))
     scopes = list(scope_dict.keys())
-    branches = os.listdir(TEMP_path)
+    pages = os.listdir(TEMP_path)
 
-    for branch in branches:
-        print("-------------------------------------------------------------branch: " + branch)
-        temp_dict = {branch: []}
-        output_dict.update(temp_dict)
-        branch_path = TEMP_path+branch
-        files = os.listdir(branch_path)
-        for file in files:
-            print("【file】: " + file)
-            for line in open(TEMP_path+branch+"/"+file, encoding="utf-8"):
-                #  firstly search for the first subname of the method
-                for scope in scopes:
-                    if (scope in line) or (cap(scope) in line)or (scope.upper() in line)or (scope.lower() in line):
+    for page in pages:
+        print("-------------------------------------------------------------page: " + page)
+        branch_path = TEMP_path+page
+        branches = os.listdir(branch_path)
+        for branch in branches:
+            temp_dict = {branch: []}
+            output_dict.update(temp_dict)
+            print("【branch】: " + branch)
+            files_path = TEMP_path+page+"/"+branch
+            files = os.listdir(files_path)
+            for file in files:
+                for line in open(TEMP_path+page+"/"+branch+"/"+file, encoding="utf-8"):
+                    #  firstly search for the first subname of the method
+                    for scope in scopes:
+                        if (scope in line) or (cap(scope) in line)or (scope.upper() in line)or (scope.lower() in line):
 
-                        sc, sc_cap, sc_upp, sc_low = find_index(scope, line)
+                            sc, sc_cap, sc_upp, sc_low = find_index(scope, line)
 
-                        scope_sorted_list = [sc, sc_cap, sc_upp, sc_low]
-                        scope_sorted_list.sort(reverse=True)
-                        scope_string_index = scope_sorted_list[0]
-                        scope_string_end_index = scope_string_index + len(scope)
+                            scope_sorted_list = [sc, sc_cap, sc_upp, sc_low]
+                            scope_sorted_list.sort(reverse=True)
+                            scope_string_index = scope_sorted_list[0]
+                            scope_string_end_index = scope_string_index + len(scope)
 
-                        # once locate category, looking for method of it
-                        methods = scope_dict[scope]
-                        # rest of the line of code after the location of scope.
-                        temp = line[scope_string_index:]
+                            # once locate category, looking for method of it
+                            methods = scope_dict[scope]
+                            # rest of the line of code after the location of scope.
+                            temp = line[scope_string_index:]
 
-                        before_scope_string_end_index = scope_string_end_index-scope_string_index
-                        # print("总权限名: " + str(before_scope_string_index))
-                        # print("总权限名截至: " + str(before_scope_string_end_index))
+                            before_scope_string_end_index = scope_string_end_index-scope_string_index
+                            # print("总权限名: " + str(before_scope_string_index))
+                            # print("总权限名截至: " + str(before_scope_string_end_index))
 
-                        # if locates the first subname, starting searching for the rest
-                        for method in methods:
-                            for sub_method in method:
-                                # print("当前搜索权限名: "+sub_method)
-                                cur_temp, \
-                                cur_scope_string_index, \
-                                cur_scope_string_end_index \
-                                    = inspect_method(branch, data, scope, method, sub_method, temp, before_scope_string_end_index, output_dict)
+                            # if locates the first subname, starting searching for the rest
+                            for method in methods:
+                                for sub_method in method:
+                                    # print("当前搜索权限名: "+sub_method)
+                                    cur_temp, \
+                                    cur_scope_string_index, \
+                                    cur_scope_string_end_index \
+                                        = inspect_method(branch, data, scope, method, sub_method, temp, before_scope_string_end_index, output_dict)
 
-                                if cur_temp and cur_scope_string_index and cur_scope_string_end_index:
-                                    # if all three vars are not None replace the previous vars by current var
-                                    # in order to start another round of recursion
-                                    before_scope_string_end_index = cur_scope_string_end_index
-                                    temp = cur_temp
-                                else:
-                                    # print("[未找到] break the loop")
-                                    # current method doesnt appear in this line of code, break the loop
-                                    # searching for the next method
-                                    break
+                                    if cur_temp and cur_scope_string_index and cur_scope_string_end_index:
+                                        # if all three vars are not None replace the previous vars by current var
+                                        # in order to start another round of recursion
+                                        before_scope_string_end_index = cur_scope_string_end_index
+                                        temp = cur_temp
+                                    else:
+                                        # print("[未找到] break the loop")
+                                        # current method doesnt appear in this line of code, break the loop
+                                        # searching for the next method
+                                        break
 
 
 # component of method [inspection]
@@ -214,7 +217,7 @@ def copy(file_dict):
     # copy files
     for key, value in zip(file_dict.keys(), file_dict.values()):
         shutil.copy(value, TEMP_path+key)
-    print("Finished search and copy")
+    # print("Finished search and copy")
 
 
 def search(path, file_dict):
@@ -275,12 +278,13 @@ if __name__ == "__main__":
     # it is useless when inspecting code from crawler
     # search_copy(file_dict)
 
-    # scope list
-    # scope_dict = scope_dict()
-    #
+    # # scope list
+    scope_dict = scope_dict()
+    # #
     # # inspection method
-    # inspection(scope_dict)
+    inspection(scope_dict)
 
     Plotter = Plot()
-    Plotter.manipulate_data(scope_dict)
+    count_dict = Plotter.manipulate_data(output_dict)
+    Plotter.plot(count_dict)
 

@@ -9,8 +9,8 @@ def sort(count_dict):
     key_list =[]
     for key in count_dict.keys():
         num = count_dict[key]
-        if num <= 3:
-            temp = {key:count_dict[key]}
+        if num <= 4:
+            temp = {key: count_dict[key]}
             key_list.append(key)
             temp_list.append(temp)
     for key in key_list:

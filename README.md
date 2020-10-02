@@ -3,7 +3,7 @@ Welcome!<br>
 This repository is currently consists of a git crawler and a python code inspector.<br>
 ## crawler
 If you want to start the crawler, please run **crawler/spider_man.py**.<br>
-The cralwer has function of auto logging, it will log the history of code crawling and saved to folder **./Log/** (auto created)<br>
+The cralwer has function of auto logging, it will log the history of code crawling and save the .log file to folder **./Log/** (auto created)<br>
 ## inspector
 If you want to start the inspector, please run **Inspection.py** and make sure you have some files in folder **./temp/** .<br>
 ## cfg

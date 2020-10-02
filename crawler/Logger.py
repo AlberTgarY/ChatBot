@@ -7,7 +7,7 @@ import os
 
 # read config file
 config = configparser.RawConfigParser()
-config.read("./cfg/cfg.ini")
+config.read("../cfg/cfg.ini")
 LOG_path = config.get("path", "log_path")
 
 def get_log():

@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QWidget, QTextEdit, QApplication
 
-
+# A useless TextEditor :D
 class Readtxt(QWidget):
     def __init__(self):
         super().__init__()

@@ -267,13 +267,17 @@ def find_cap(text):
 
 
 def search_copy(file_dict):
+    # create folder if doesnt exist
+    if not os.path.exists(TARGET_path):
+        os.mkdir(config.get("path", "target_path"))
+
     dict = search(TARGET_path, file_dict)
     copy(dict)
 
 
 if __name__ == "__main__":
 
-    # this method is used to search for all python files in [target] folder
+    # this method is used to search for all python files in [target] folder (which will be created if doesnt exist)
     # after searching it will convert py file to text file in [temp] folder for further inspection
     # it is useless when inspecting code from crawler
     # search_copy(file_dict)

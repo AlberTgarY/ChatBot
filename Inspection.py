@@ -100,7 +100,7 @@ def inspection(scope_dict):
 
                             # once locate category, looking for method of it
                             methods = scope_dict[scope]
-                            # rest of the line of code after the location of scope.
+                            # split the line of code and take latter.
                             temp = line[scope_string_index:]
 
                             before_scope_string_end_index = scope_string_end_index-scope_string_index

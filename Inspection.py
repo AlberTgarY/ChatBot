@@ -5,6 +5,7 @@ import re
 from openpyxl import load_workbook
 import pandas as pd
 from Plotter import Plot
+from inspec_Logger import get_log
 
 # read config file
 config = configparser.RawConfigParser()
@@ -12,6 +13,7 @@ config.read("./cfg/cfg.ini")
 TEMP_path = config.get("path", "temp_path")
 TARGET_path = config.get("path", "target_path")
 XLSX_path = config.get("path", "name_xlsx")
+logger = get_log()
 
 type_list = [".py"]
 file_dict = {}
@@ -43,6 +45,7 @@ def output_scope(branch, scope_full_name, scopes_requirement, output_dict):
     print("Found the scope: ")
     print(scope_full_name + ": ")
     print(scopes_requirement.tolist())
+    logger.info("["+branch +"] "+"find scope: "+scope_full_name + " => "+str(scopes_requirement.tolist()))
     scope_list = output_dict[branch]
     requirement_list = scopes_requirement.tolist()
 
@@ -281,7 +284,7 @@ if __name__ == "__main__":
     # after searching it will convert py file to text file in [temp] folder for further inspection
     # it is useless when inspecting code from crawler
     # search_copy(file_dict)
-
+    logger.info("-------------------------------start parsing-------------------------------")
     # # scope list
     scope_dict = scope_dict()
     # #

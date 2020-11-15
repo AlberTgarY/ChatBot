@@ -1,5 +1,5 @@
 # coding=utf-8
-
+from sqlite3.dbapi2 import connect
 import url_manager, html_downloader, html_parser
 import configparser
 from Logger import get_log
@@ -61,6 +61,10 @@ class SpiderMain(object):
 
 
 if __name__ == "__main__":
+    # channels:history
+    # groups:history
+    # groups: history
+    # mpim:history
     # 设置入口页 URL
     # https://news.sina.com.cn/  https://news.163.com/
     logger.info("----------------------Crawler has started---------------------------")

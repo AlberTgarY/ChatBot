@@ -7,17 +7,17 @@ import os
 
 # read config file
 config = configparser.RawConfigParser()
-config.read("../cfg/cfg.ini")
-LOG_path = config.get("path", "log_path")
+config.read("./cfg/cfg.ini")
+LOG_path = config.get("path", "inspec_log_path")
 
 def get_log():
 
     # create folder if doesnt exist
     if not os.path.exists(LOG_path):
-        os.mkdir(config.get("path", "log_path"))
+        os.mkdir(config.get("path", "inspec_log_path"))
 
     # configuring logger
-    logger = logging.getLogger("Logger")
+    logger = logging.getLogger("Logger1")
     if not logger.handlers:
         logger.propagate = 0
         # set common handler

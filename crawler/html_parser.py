@@ -11,7 +11,7 @@ from Logger import get_log
 import time
 import random
 
-type_list = ["py"]
+type_list = ["py", "js"]
 config = configparser.RawConfigParser()
 config.read("../cfg/cfg.ini")
 TEMP_path = config.get("path", "temp_path_crawler")
@@ -33,7 +33,7 @@ def get_keys(d, value):
 
 class HtmlParser(object):
     @staticmethod
-    def fetch_python_code(file_dict):
+    def fetch_code(file_dict):
         try:
             downloader = html_downloader.HtmlDownloader()
 
@@ -79,8 +79,8 @@ class HtmlParser(object):
                             f.write(row.text+"\n")
 
         except Exception as e:
-            logger.debug("Got a Error in method [fetch_python_code]: " + str(e))
-            print("Got a Error in method [fetch_python_code]: " + str(e))
+            logger.debug("Got a Error in method [fetch_code]: " + str(e))
+            print("Got a Error in method [fetch_code]: " + str(e))
 
     @staticmethod
     def has_key(found, prefix, suffix, file_dict):
@@ -96,7 +96,7 @@ class HtmlParser(object):
         else:
             return
 
-    def recursive_search_python_file(self, url, file_dict):
+    def recursive_search_file(self, url, file_dict):
         try:
             html_cont = self.downloader.download(url)
             soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
@@ -122,16 +122,16 @@ class HtmlParser(object):
                         key = self.has_key(found, prefix, suffix, file_dict)
                         tempdict = {key: str(target_url)}
                         file_dict.update(tempdict)
-                        logger.debug("Found a python file")
-                        print("find a python file")
+                        logger.debug("Found File: " + str(key))
+                        print("Found File: " + str(key))
                 else:
-                    self.recursive_search_python_file(target_url, file_dict)
+                    self.recursive_search_file(target_url, file_dict)
         except Exception as e:
-            print("Got a Error in method [recursive_search_python_file]: " +str(e))
+            print("Got a Error in method [recursive_search_file]: " +str(e))
         return file_dict
 
     # get the files
-    def _get_new_data(self, soup):
+    def get_new_data(self, soup):
         self.downloader = html_downloader.HtmlDownloader()
         res_data = {}
         # contain all news in current page
@@ -144,8 +144,25 @@ class HtmlParser(object):
             attr_dict = json.loads(n.a['data-hydro-click'])
             url = attr_dict['payload']['result']['url']
             count = count - 1
-            if count > 0:
-                file_dict = self.recursive_search_python_file(url, file_dict)
+            print(url)
+            too_large = ["https://github.com/Cog-Creators/Red-DiscordBot", "https://github.com/msdevstep/subroute.io"
+                         ,"https://github.com/MadisonReed/oncall-slackbot", "https://github.com/dasistHYOJIN/martin-slackbot",
+                         "https://github.com/prateeksan/code_review_slackbot","https://github.com/lambtron/slack-channel-fomo-bot",
+                         "https://github.com/project-digital/slackbot_onboard", "https://github.com/cowie/scrub-sfdc-slackbot",
+                         "https://github.com/jumbosushi/Go-Outside", "https://github.com/doublea1186/slackbot",
+                         "https://github.com/RodrigoBP99/SlackBot","https://github.com/Semior001/mtdbot",
+                         "https://github.com/tbremm/slack_foaas","https://github.com/ferrari3000/thanos_slackbot",
+                         "https://github.com/kris927b/Stan-SlackBot","https://github.com/akshayjoyinfo/dx-tracking-slackbot",
+                         "https://github.com/didinj/nodejs-slackbot-karmabot-example","https://github.com/marcusbass323/slackjokebot",
+                         "https://github.com/delacruz1/Drizzy-Bot","https://github.com/thyrlian/Doraemon",
+                         "https://github.com/kmaida/speakerbot","https://github.com/didinj/nodejs-mongodb-slackbot-example",
+                         "https://github.com/prav10194/botkit-slackbot","https://github.com/nobanusa/Airport-Slackbot"]
+            if url in too_large:
+                print("url: "+url+" is too large ")
+                get_log().info("url: "+url+" is too large ")
+                continue
+            if count >= 0:
+                file_dict = self.recursive_search_file(url, file_dict)
                 temp_dict = {url: file_dict}
                 res_data.update(temp_dict)
             else:
@@ -161,6 +178,6 @@ class HtmlParser(object):
         soup = BeautifulSoup(html_cont, 'html.parser', from_encoding='utf-8')
 
         # new_urls = self._get_new_urls(page_url, soup)
-        res_data = self._get_new_data(soup)
+        res_data = self.get_new_data(soup)
         print(res_data)
         return res_data

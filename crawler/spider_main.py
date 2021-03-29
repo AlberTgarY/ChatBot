@@ -48,7 +48,7 @@ class SpiderMain(object):
                 logger.info(">>>Start crawling: "+new_url)
                 # parse the code
                 res_data = self.parser.parse(new_url, html_cont)
-                self.parser.fetch_python_code(res_data)
+                self.parser.fetch_code(res_data)
 
                 if count == int(counter):
                     break
@@ -68,6 +68,10 @@ if __name__ == "__main__":
     # 设置入口页 URL
     # https://news.sina.com.cn/  https://news.163.com/
     logger.info("----------------------Crawler has started---------------------------")
-    root_url = "https://github.com/search?l=Python&o=desc&p=" + str(page) + "&q=slackbot&s=stars&type=Repositories"
+    # root_url = "https://github.com/search?l=Python&o=desc&p=" + str(page) + "&q=slackbot&s=stars&type=Repositories"
+    # root_url = "https://github.com/search?l=Python&p=" + str(page) + "&q=discordbot&type=Repositories"
+    page = int(page)
+    root_url = "https://github.com/search?l=JavaScript&o=desc&p=" + str(page) + "&q=slackbot&s=stars&type=Repositories"
     obj_spider = SpiderMain()
     obj_spider.craw(root_url)
+

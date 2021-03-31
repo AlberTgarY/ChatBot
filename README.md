@@ -1,2 +1,2 @@
-# ChatBot Demo
-this branch consists of a simple crawler which craws scope and domain from slackeventapi and WEBapi
+# PoC bots
+here is the code of PoC bots: fish.py is for redis bot ,and Email.py and send.py are for email bot.

@@ -13,7 +13,6 @@ author: ZHAN YICHENG 03/04/2021
 config = configparser.RawConfigParser()
 config.read("../cfg/cfg.ini")
 TEMP_path = config.get("path", "temp_path_JavaScript")
-TARGET_path = config.get("path", "target_path")
 XLSX_path = config.get("path", "name_xlsx")
 type_list = [".py"]
 

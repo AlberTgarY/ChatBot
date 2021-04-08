@@ -11,7 +11,6 @@ from inspec_Logger import get_log
 config = configparser.RawConfigParser()
 config.read("../cfg/cfg.ini")
 TEMP_path = config.get("path", "temp_path_JavaScript")
-TARGET_path = config.get("path", "target_path")
 XLSX_path = config.get("path", "name_xlsx")
 logger = get_log()
 
@@ -28,10 +27,6 @@ Total_Lines = 0
 Total_Repo = 0
 Empty_Repo = 0
 No_Result_Repo = 0
-
-# create folder if doesnt exist
-if not os.path.exists(TEMP_path):
-    os.mkdir(config.get("path", "temp_path"))
 
 '''
 This file is the main module of the CodeChecker, it search code files recursively to find the malicious scopes.

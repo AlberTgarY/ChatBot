@@ -3,7 +3,7 @@ Welcome!<br>
 This repository is currently consists of a git crawler and a python code inspector.<br>
 ## crawler
 If you want to start the crawler, please run **crawler/crawler.py**.<br>
-For python, please create folder **./ChatBot/py**. For JavaScript, please create folder **./ChatBot/js**. Otherwise the crawler has no location to save its data.<br>
+For python, please create folder **./ChatBot/py**. For JavaScript, please create folder **./ChatBot/js**.<br> Otherwise the crawler has no location to save its data.<br>
 You can always change the name of these folders in cfg.ini<br>
 The cralwer has function of auto logging, it will log the history of code crawling and save the .log file to folder **./Log/** (auto created if doesnt exist)<br>
 ## inspector

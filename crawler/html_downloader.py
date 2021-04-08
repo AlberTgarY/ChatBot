@@ -3,12 +3,16 @@ import ssl
 from urllib import request
 from fake_useragent import UserAgent
 from Logger import get_log
-
+'''
+This file contains the HTMLDownloader, it will access and download the HTML raw code from the target website.
+author: ZHAN YICHENG 03/04/2021
+'''
 logger = get_log()
-# HTML downloader
+
+
 class HtmlDownloader(object):
 
-    #  download the page
+    # This method downloads the HTML page
     @staticmethod
     def download(url):
         context = ssl._create_unverified_context()
@@ -17,9 +21,9 @@ class HtmlDownloader(object):
 
         try:
             ua = UserAgent()
-            # fake headers
+            # fake headers will help the crawler to dodge the website`s anti-crawling module.
             headers = {"User-Agent": ua.random}
-            # request website
+            # request website`s context
             r = request.Request(url=url,headers=headers)
             response = request.urlopen(r, context=context)
             if response.getcode() != 200:

@@ -4,7 +4,12 @@ import datetime
 import logging.config
 import configparser
 import os
-
+'''
+This file is the Logging module for code checker, it creates 2 kinds of logfile. 
+The LOG.log only records the INFO level message and
+the Debug_LOG.log will record DEBUG and INFO messages, which includes more detailed information,
+author: ZHAN YICHENG 03/04/2021
+'''
 # read config file
 config = configparser.RawConfigParser()
 config.read("../cfg/cfg.ini")

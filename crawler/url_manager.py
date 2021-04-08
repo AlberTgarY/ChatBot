@@ -1,9 +1,10 @@
-# coding=utf-8
-
-# URL 管理器
+'''
+This file is the URL Manager. It stores the urls crawled from the crawler.
+author: ZHAN YICHENG 03/04/2021
+'''
 class UrlManager(object):
 
-    # init new/old URL manager as set()
+    # init
     def __init__(self):
 
         self.new_urls = set()
@@ -26,14 +27,12 @@ class UrlManager(object):
         for url in urls:
             self.add_new_url(url)
 
-
-
-    # URL 管理器内是否存在 URL
+    # check if there`s new url
     def has_new_url(self):
 
         return len(self.new_urls) != 0
 
-    # 从 URL 管理器内获取一个 URL
+    # get a new url from the manager
     def get_new_url(self):
 
         new_url = self.new_urls.pop()

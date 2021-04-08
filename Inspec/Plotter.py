@@ -1,8 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import json
+'''
+This file is the Plotter of code checker.
+It counts the number of the scopes usage and generates statistical diagrams.
+author: ZHAN YICHENG 03/04/2021
+'''
 
+# 'conversation.history' will be translate to:
+# 'channels:history', 'groups:history', 'im:history', 'mpim:history' as well.
 very_dangerous = ['channels:history', 'groups:history', 'im:history', 'mpim:history']
+
+# search for the dangerous scopes
 def search_dangerous(branch_method):
     result = []
     temp = branch_method[1:len(branch_method)-1]
@@ -15,11 +24,13 @@ def search_dangerous(branch_method):
             list[n] = temp[1:len(temp)]
             n = n+1
     for name in list:
-        temp_name =name[1:len(name)-1]
+        temp_name = name[1:len(name)-1]
         if temp_name in very_dangerous:
             result.append(temp_name)
     return result
 
+
+# sort the dict in descending order
 def sort(count_dict):
     temp_list = []
     key_list =[]
@@ -33,11 +44,12 @@ def sort(count_dict):
         count_dict.pop(key)
     return count_dict, temp_list
 
+# add text for the scope
 def auto_text(rects, plt):
     for rect in rects:
         plt.text(rect.get_x(), rect.get_height(), rect.get_height(), ha='left', va='bottom')
 
-
+# Plot the bar diagram
 class Plot(object):
 
     @staticmethod

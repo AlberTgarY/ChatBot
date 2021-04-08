@@ -14,7 +14,6 @@ counter = config.get("num", "num_page")
 page = config.get("num", "page")
 logger = get_log()
 
-
 # Main program of the crawler
 class Crawler(object):
 

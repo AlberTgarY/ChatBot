@@ -1,2 +1,2 @@
 # ChatBot Demo
-this branch consists of a simple crawler which craws scope and domain from slackeventapi and WEBapi
+this branch consists the config files for Pysa.
